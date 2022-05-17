@@ -20,7 +20,7 @@ inquirer
         type: 'list',
         name: 'choices',
         message: 'What would you like to do?',
-        choices: [ "View all departments", new inquirer.Separator(), "View all roles", new inquirer.Separator(), "View all employees", new inquirer.Separator(), "Add a department", new inquirer.Separator(), "Add a role", new inquirer.Separator(), "Add and update a role", new inquirer.Separator() ]
+        choices: [ "View all departments", new inquirer.Separator(), "View all roles", new inquirer.Separator(), "View all employees", new inquirer.Separator(), "Add a department", new inquirer.Separator(), "Add a role", new inquirer.Separator(), "Add an employee", new inquirer.Separator() ]
     },
   ])
   .then((response) =>
@@ -70,8 +70,182 @@ let responseFunction = (response) => {
         })
      }
 
+    //  add department
+
+     if (response.choices === "Add a department" ) {
+
+  inquirer
+  .prompt([
+    {
+        type: 'input',
+        name: 'addDept',
+        message: 'What is the name of the Department?'
+    }
+  ])
+  .then((response) =>
+
+    addDept(response.addDept)
+  );
+  }
+
+  // add role
+
+  if (response.choices === "Add a role" ) {
+
+    inquirer
+    .prompt([
+      {
+          type: 'input',
+          name: 'addRole',
+          message: 'What is the name of the Role?'
+      },
+      {
+        type: 'input',
+        name: 'addSalary',
+        message: 'What is the Salary'
+    },
+    {
+      type: 'list',
+      name: 'addDept',
+      message: 'What is the department',
+      choices: [ "Marketing", "Sales", "Accounting", "Human Resources", "Warehouse"]
+  },
+
+  ])
+    .then((response) =>
+
+  
+      addRole(response.addRole, response.addSalary, getDeptNum(response.addDept))
+    );
+    }
+
+  // add new employee
+
+  if (response.choices === "Add an employee" ) {
+
+    inquirer
+    .prompt([
+      {
+          type: 'input',
+          name: 'addFirst',
+          message: 'What is the employee first?'
+      },
+      {
+        type: 'input',
+        name: 'addLast',
+        message: 'What is the employee last name?'
+    },
+   
+  {
+    type: 'list',
+    name: 'addRoleId',
+    message: 'What is the employee role?',
+    choices: [ "Manager", "Senior Accountant", "HR Rep 1", "Junior Sales assistant", "Social Media Marketer", "Warehouse Manager"]
+  },
+  {
+  type: 'list',
+  name: 'addManId',
+  message: 'Who is the employees Manager',
+  choices: [ "Michael Scott", "Dwight Schrute", "Darryl Philbin", "Ryan Howard", "Toby Flenderson" , "No Manager"]
+  }
+
+  ])
+    .then((response) =>
+
+  
+      addEmployee(response.addFirst, response.addLast, getRoleId(response.addRoleId)), getManId(response.addManId))
+    }
 
 }
 
+// add dept query
+
+let addDept = (response) => {
+    database.query(`INSERT INTO department (department) VALUES ('${response}') `, function(err, results) {
+     if (err) {
+         console.log(err);
+       }
+        console.log(`Added ${response} to the database`)
+        callPrompt();
+    })
+
+}
+
+// add a role query
+
+let addRole = (addedRole, addedSalary, addedDepartment) => {
+  database.query(`INSERT INTO role (title, salary, department_id) VALUES ('${addedRole}', '${addedSalary}', '${addedDepartment}') `, function(err, results) {
+   if (err) {
+       console.log(err);
+     }
+      console.log(`Added ${addedRole} to the database`)
+      callPrompt();
+  })
+
+}
+
+// transform input of department for role into int 
+let getDeptNum = (addedDept) => {
+    if (addedDept === "Marketing"){
+      return 1
+    } else if (addedDept === "Sales") {
+      return 2
+    } else if (addedDept === "Accounting") {
+        return 3
+    } else if (addedDept === "Human Resources") {
+      return 4
+    } else {
+      return 5
+    }
+}
+
+// add employee
+
+let addEmployee = (addedFirst, addedLast, addedRoleID, addedManId) => {
+  database.query(`INSERT INTO employee (first_name, role_id, manager_id) VALUES ('${addedFirst}', '${addedLast}', '${addedRoleID}', '${addedManID}') `, function(err, results) {
+   if (err) {
+       console.log(err);
+     }
+      console.log(`Added ${addedRole} to the database`)
+      callPrompt();
+  })
+
+}
+
+// transform input of role id for int 
+let getRoleId = (addedRoleID) => {
+  if (addedRoleID === "Manager"){
+    return 1
+  } else if (addedRoleID === "Senior Accountant") {
+    return 2
+  } else if (addedRoleID === "HR Rep 1") {
+      return 3
+  } else if (addedRoleID === "Junior Sales assistant") {
+    return 4
+  } else if ((addedRoleID === "Social Media Marketer")) {
+    return 5
+  } else {
+    return 6 
+  }
+}
+
+// transform input of man id for int 
+let getManId = (addedManID) => {
+  if (addedManID === "Michael Scott"){
+    return 1
+  } else if (addedManID === "Dwight Schrute") {
+    return 2
+  } else if (addedManID === "Darryl Philbin") {
+      return 3
+  } else if (addedManID === "Ryan Howard") {
+    return 4
+  } else if ((addedRoleID === "Toby Flenderson")) {
+    return 5
+  } else {
+    return null 
+  }
+}
+
+// start
 
 init();

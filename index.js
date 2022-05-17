@@ -1,6 +1,7 @@
 const database = require("./config/connections")
 const inquirer = require('inquirer');
-const cTable = require('console.table')
+const cTable = require('console.table');
+const { removeListener } = require("./config/connections");
 
 // initilaze function 
  let init = () => database.connect((err) => {
@@ -20,7 +21,7 @@ inquirer
         type: 'list',
         name: 'choices',
         message: 'What would you like to do?',
-        choices: [ "View all departments", new inquirer.Separator(), "View all roles", new inquirer.Separator(), "View all employees", new inquirer.Separator(), "Add a department", new inquirer.Separator(), "Add a role", new inquirer.Separator(), "Add an employee", new inquirer.Separator() ]
+        choices: [ "View all departments", new inquirer.Separator(), "View all roles", new inquirer.Separator(), "View all employees", new inquirer.Separator(), "Add a department", new inquirer.Separator(), "Add a role", new inquirer.Separator(), "Add an employee", new inquirer.Separator(), "Update employee role", new inquirer.Separator() ]
     },
   ])
   .then((response) =>
@@ -143,18 +144,61 @@ let responseFunction = (response) => {
     choices: [ "Manager", "Senior Accountant", "HR Rep 1", "Junior Sales assistant", "Social Media Marketer", "Warehouse Manager"]
   },
   {
-  type: 'list',
-  name: 'addManId',
-  message: 'Who is the employees Manager',
-  choices: [ "Michael Scott", "Dwight Schrute", "Darryl Philbin", "Ryan Howard", "Toby Flenderson" , "No Manager"]
-  }
+    type: 'list',
+    name: 'addManId',
+    message: 'What is the employee role?',
+    choices: [ "Michael Scott", "Dwight Schrute", "Darryl Philbin", "Ryan Howard", "Toby Flenderson"]
+  },
 
   ])
     .then((response) =>
 
-  
-      addEmployee(response.addFirst, response.addLast, getRoleId(response.addRoleId)), getManId(response.addManId))
+      addEmployee(response.addFirst, response.addLast, getRoleId(response.addRoleId), getManId(response.addManId)))
     }
+
+  
+  // update employee role
+
+  if (response.choices === "Update employee role" ) {
+
+    inquirer
+    .prompt([
+   
+      {
+        type: 'list',
+        name: 'updateEmployee',
+        message: 'What is the employee you want to update?',
+        choices: [ "Michael Scott", "Dwight Schrute", "Darryl Philbin", "Ryan Howard", "Toby Flenderson"]
+      },
+      {
+        type: 'list',
+        name: 'updateId',
+        message: 'What is the employee new role?',
+        choices: [ "Manager", "Senior Accountant", "HR Rep 1", "Junior Sales assistant", "Social Media Marketer", "Warehouse Manager"]
+      },
+
+  ])
+    .then((response) =>
+
+      updateEmployee(getManId(response.updateEmployee), getRoleId(response.updateId)))
+    }
+
+
+
+}
+
+// update employee
+
+let updateEmployee = (updateEmployee, updateId) => {
+
+  database.query(`UPDATE employee SET role_id = '${updateId}' WHERE id = '${updateEmployee}' `, function(err, results) {
+    if (err) {
+        console.log(err);
+      }
+       console.log(`Updated Employee in the database`)
+       callPrompt();
+   })
+
 
 }
 
@@ -201,12 +245,12 @@ let getDeptNum = (addedDept) => {
 
 // add employee
 
-let addEmployee = (addedFirst, addedLast, addedRoleID, addedManId) => {
-  database.query(`INSERT INTO employee (first_name, role_id, manager_id) VALUES ('${addedFirst}', '${addedLast}', '${addedRoleID}', '${addedManID}') `, function(err, results) {
+let addEmployee = (addedFirst, addedLast, addedRoleId, addedManId) => {
+  database.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${addedFirst}', '${addedLast}', '${addedRoleId}', '${addedManId}') `, function(err, results) {
    if (err) {
        console.log(err);
      }
-      console.log(`Added ${addedRole} to the database`)
+      console.log(`Added ${addedFirst} ${addedLast}  to the database`)
       callPrompt();
   })
 
@@ -239,12 +283,11 @@ let getManId = (addedManID) => {
       return 3
   } else if (addedManID === "Ryan Howard") {
     return 4
-  } else if ((addedRoleID === "Toby Flenderson")) {
+  } else if (addedManID === "Toby Flenderson") {
     return 5
-  } else {
-    return null 
   }
 }
+
 
 // start
 

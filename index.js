@@ -146,7 +146,7 @@ let responseFunction = (response) => {
   {
     type: 'list',
     name: 'addManId',
-    message: 'What is the employee role?',
+    message: 'Who is the employees Manager?',
     choices: [ "Michael Scott", "Dwight Schrute", "Darryl Philbin", "Ryan Howard", "Toby Flenderson"]
   },
 
